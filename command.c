@@ -1,0 +1,135 @@
+#include "command.h"
+#include <stdlib.h>
+#include <stdio.h>
+
+// List of all available commands
+char *cmd[] = { 
+    "mkdir", "rmdir",
+    "ls", "cd",
+    "pwd", "creat",
+    "rm", "reload",
+    "save", "quit", 0 
+};
+
+char** parse_command(char *user_command)
+{
+	char **tokens = (char**)malloc(3 * sizeof(char*));
+	if (!tokens)
+	{
+		printf("Memory allocation failed for tokens.\n");
+		return NULL;
+	} 
+
+	char *input_copy = (char*)malloc(strlen(user_command) + 1);
+	if (!input_copy)
+	{
+		printf("Memory allocation failed for input copy.\n");
+		free(tokens);
+		return NULL;
+	}
+	strcpy(input_copy, user_command);
+
+	int token_count = 0;
+	char *token = strtok(input_copy, " \t\n");
+
+	while(token != NULL && token_count < 3)
+	{
+		if (token_count > 1) {
+			printf("unexpected argument: %s\n", token);
+			for (int i = 0; i < token_count; i++)
+				free(tokens[i]);
+			free(tokens);
+			free(input_copy);
+			return NULL;
+		}
+
+		tokens[token_count] = (char*)malloc(strlen(token) + 1);
+		if (tokens[token_count])
+			strcpy(tokens[token_count], token);
+		token_count++;
+		token = strtok(NULL, " \t\n");
+	}
+
+	tokens[token_count] = NULL;
+	free(input_copy);
+
+	if (token_count == 0) {
+		printf("No command entered.\n");
+		free(tokens);
+		return NULL;
+	}
+	return tokens;
+}
+
+int execute_command(char **tokens, NODE **cwd, NODE *root)
+{
+	if (tokens == NULL || tokens[0] == NULL) {
+		printf("No command entered.\n");
+		return -1;
+	}
+
+	for (int i = 0; cmd[i] != 0; i++) {
+		if (strcmp(tokens[0], cmd[i]) == 0) {
+			switch(i) {
+				case 0: return mkdir_command(tokens[1]);
+				case 1: return rmdir_command(tokens[1]);
+				case 2: return ls_command(tokens[1]);
+				case 3: return cd_command(tokens[1]);
+				case 4: return pwd_command();
+				case 5: return creat_command(tokens[1]);
+				case 6: return rm_command(tokens[1]);
+				case 7: return reload_command(tokens[1]);
+				case 8: return save_command(tokens[1]);
+				case 9: exit(0);
+			}
+		}
+	}
+
+	printf("Command not found!\n");
+	return -1;
+}
+
+int mkdir_command(char *name)
+{
+	return 0; // Placeholder for mkdir implementation
+}
+
+int rmdir_command(char *name)
+{
+	return 0; // Placeholder for rmdir implementation
+}
+
+int ls_command(char *name)
+{
+	return 0; // Placeholder for ls implementation
+}
+
+int cd_command(char *name)
+{
+	return 0; // Placeholder for cd implementation
+}
+
+int pwd_command()
+{
+	return 0; // Placeholder for pwd implementation
+}
+
+int creat_command(char *name)
+{
+	return 0; // Placeholder for creat implementation
+}
+
+int rm_command(char *name)
+{
+	return 0; // Placeholder for rm implementation
+}
+
+int reload_command(char *filename)
+{
+	return 0; // Placeholder for reload implementation
+}
+
+int save_command(char *filename)
+{
+	return 0; // Placeholder for save implementation
+}
