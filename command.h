@@ -13,7 +13,7 @@ int execute_command(char **tokens, NODE **cwd, NODE *root);
 // Command implementations
 int mkdir_command(char *name);
 int rmdir_command(char *name);
-int ls_command(char *name);
+int ls_command(char *name, NODE *cwd, NODE *root);
 int cd_command(char *name);
 int pwd_command();
 int creat_command(char *name);
