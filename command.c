@@ -74,7 +74,7 @@ int execute_command(char **tokens, NODE **cwd, NODE *root)
 				case 0: return mkdir_command(tokens[1]);
 				case 1: return rmdir_command(tokens[1]);
 				case 2: return ls_command(tokens[1], *cwd, root);
-				case 3: return cd_command(tokens[1]);
+				case 3: return cd_command(tokens[1], cwd, root);
 				case 4: return pwd_command();
 				case 5: return creat_command(tokens[1]);
 				case 6: return rm_command(tokens[1]);
@@ -126,9 +126,35 @@ int ls_command(char *name, NODE *cwd, NODE *root)
 	return 0;
 }
 
-int cd_command(char *name)
+int cd_command(char *name, NODE **cwd, NODE *root)
 {
-	return 0; // Placeholder for cd implementation
+	// If name is NULL, empty, or "/" change to root
+	if (name == NULL || strcmp(name, "") == 0 || strcmp(name, "/") == 0)
+	{
+		*cwd = root; 
+		return 0;
+	}
+
+	// Else look for actual path
+	NODE* node = find_node(name, *cwd, root);
+	if (node == NULL)
+	{
+		printf("No such file or directory: %s\n", name);
+		return -1;
+	}
+	else
+	{
+		if (node->type == 'D')
+		{
+			*cwd = node;
+			return 0;
+		}
+		else
+		{
+			printf("Not a directory: %s\n", name);
+			return -1;
+		}
+	}
 }
 
 int pwd_command()
