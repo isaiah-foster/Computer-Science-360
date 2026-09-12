@@ -71,7 +71,7 @@ int execute_command(char **tokens, NODE **cwd, NODE *root)
 	for (int i = 0; cmd[i] != 0; i++) {
 		if (strcmp(tokens[0], cmd[i]) == 0) {
 			switch(i) {
-				case 0: return mkdir_command(tokens[1]);
+				case 0: return mkdir_command(tokens[1], *cwd, root);
 				case 1: return rmdir_command(tokens[1], *cwd, root);
 				case 2: return ls_command(tokens[1], *cwd, root);
 				case 3: return cd_command(tokens[1], cwd, root);
@@ -89,9 +89,53 @@ int execute_command(char **tokens, NODE **cwd, NODE *root)
 	return -1;
 }
 
-int mkdir_command(char *name)
+int mkdir_command(char *name, NODE *cwd, NODE *root)
 {
-	return 0; // Placeholder for mkdir implementation
+	if (name == NULL)
+	{
+		printf("Usage: mkdir pathname\n");
+		return -1;
+	}
+
+	// Split the pathname, e.g. /a/b/c into dirname /a/b and basename c
+	char dirname[MAX_PATH], basename[MAX_PATH];
+	if (split_path(name, dirname, basename) != 0)
+	{
+		// The only pathname with no basename is the root, which always exists
+		printf("DIR %s already exists!\n", name);
+		return -1;
+	}
+
+	// The parent directory has to exist and be a DIR
+	NODE* parent = find_node(dirname, cwd, root);
+	if (parent == NULL)
+	{
+		printf("No such file or directory: %s\n", dirname);
+		return -1;
+	}
+	if (parent->type != 'D')
+	{
+		printf("Not a directory: %s\n", dirname);
+		return -1;
+	}
+
+	// Check if the directory already exists
+	if (find_child(parent, basename) != NULL)
+	{
+		printf("DIR %s already exists!\n", name);
+		return -1;
+	}
+
+	NODE* new_node = create_node(basename, 'D'); // Set type to directory
+	if (!new_node)
+	{
+		printf("Memory allocation failed for new node.\n");
+		return -1;
+	}
+
+	// Insert new node into the tree
+	insert_node(parent, new_node);
+	return 0;
 }
 
 int rmdir_command(char *name, NODE *cwd, NODE *root)

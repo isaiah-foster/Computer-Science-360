@@ -11,7 +11,7 @@ char** parse_command(char *user_command);
 int execute_command(char **tokens, NODE **cwd, NODE *root);
 
 // Command implementations
-int mkdir_command(char *name);
+int mkdir_command(char *name, NODE *cwd, NODE *root);
 int rmdir_command(char *name, NODE *cwd, NODE *root);
 int ls_command(char *name, NODE *cwd, NODE *root);
 int cd_command(char *name, NODE **cwd, NODE *root);
