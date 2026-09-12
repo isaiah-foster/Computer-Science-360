@@ -72,7 +72,7 @@ int execute_command(char **tokens, NODE **cwd, NODE *root)
 		if (strcmp(tokens[0], cmd[i]) == 0) {
 			switch(i) {
 				case 0: return mkdir_command(tokens[1]);
-				case 1: return rmdir_command(tokens[1]);
+				case 1: return rmdir_command(tokens[1], *cwd, root);
 				case 2: return ls_command(tokens[1], *cwd, root);
 				case 3: return cd_command(tokens[1], cwd, root);
 				case 4: return pwd_command(*cwd);
@@ -94,9 +94,38 @@ int mkdir_command(char *name)
 	return 0; // Placeholder for mkdir implementation
 }
 
-int rmdir_command(char *name)
+int rmdir_command(char *name, NODE *cwd, NODE *root)
 {
-	return 0; // Placeholder for rmdir implementation
+	if (name == NULL)
+	{
+		printf("Usage: rmdir pathname\n");
+		return -1;
+	}
+
+	NODE* node = find_node(name, cwd, root);
+	if (node == NULL || node->type != 'D') // Check if the node exists and is a directory
+	{
+		printf("DIR %s does not exist!\n", name);
+		return -1;
+	}
+	else if (node->parent == NULL) // The root is never removed
+	{
+		printf("Cannot remove DIR %s!\n", name);
+		return -1;
+	}
+	else
+	{
+		if (node->child == NULL) // Check if it's a directory and empty
+		{
+			remove_node(node);
+			return 0;
+		}
+		else
+		{
+			printf("Cannot remove DIR %s (not empty)!\n", name);
+			return -1;
+		}
+	}
 }
 
 int ls_command(char *name, NODE *cwd, NODE *root)
@@ -248,9 +277,9 @@ int rm_command(char *name, NODE *cwd, NODE *root)
 		return -1;
 	}
 	else
-		{
-			remove_node(node);
-			return 0;
+	{
+		remove_node(node);
+		return 0;
 	}
 }
 
