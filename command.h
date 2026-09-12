@@ -16,7 +16,7 @@ int rmdir_command(char *name);
 int ls_command(char *name, NODE *cwd, NODE *root);
 int cd_command(char *name, NODE **cwd, NODE *root);
 int pwd_command(NODE *cwd);
-int creat_command(char *name);
+int creat_command(char *name, NODE *cwd, NODE *root);
 int rm_command(char *name, NODE *cwd, NODE *root);
 int reload_command(char *filename);
 int save_command(char *filename);
