@@ -75,7 +75,7 @@ int execute_command(char **tokens, NODE **cwd, NODE *root)
 				case 1: return rmdir_command(tokens[1]);
 				case 2: return ls_command(tokens[1], *cwd, root);
 				case 3: return cd_command(tokens[1], cwd, root);
-				case 4: return pwd_command();
+				case 4: return pwd_command(*cwd);
 				case 5: return creat_command(tokens[1]);
 				case 6: return rm_command(tokens[1]);
 				case 7: return reload_command(tokens[1]);
@@ -157,9 +157,26 @@ int cd_command(char *name, NODE **cwd, NODE *root)
 	}
 }
 
-int pwd_command()
+// Recursively print the absolute pathname of a node, from the root down.
+// The root itself contributes nothing, so its children print as "/name".
+static void print_path(NODE *node)
 {
-	return 0; // Placeholder for pwd implementation
+	if (node == NULL || node->parent == NULL)
+		return;
+	print_path(node->parent);
+	printf("/%s", node->name);
+}
+
+int pwd_command(NODE *cwd)
+{
+	if (cwd->parent == NULL) // The CWD is the root
+		printf("/\n");
+	else
+	{
+		print_path(cwd);
+		printf("\n");
+	}
+	return 0;
 }
 
 int creat_command(char *name)
