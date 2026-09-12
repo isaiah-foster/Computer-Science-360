@@ -77,7 +77,7 @@ int execute_command(char **tokens, NODE **cwd, NODE *root)
 				case 3: return cd_command(tokens[1], cwd, root);
 				case 4: return pwd_command(*cwd);
 				case 5: return creat_command(tokens[1]);
-				case 6: return rm_command(tokens[1]);
+				case 6: return rm_command(tokens[1], *cwd, root);
 				case 7: return reload_command(tokens[1]);
 				case 8: return save_command(tokens[1]);
 				case 9: exit(0);
@@ -184,9 +184,30 @@ int creat_command(char *name)
 	return 0; // Placeholder for creat implementation
 }
 
-int rm_command(char *name)
+int rm_command(char *name, NODE *cwd, NODE *root)
 {
-	return 0; // Placeholder for rm implementation
+	if (name == NULL)
+	{
+		printf("Usage: rm pathname\n");
+		return -1;
+	}
+
+	NODE* node = find_node(name, cwd, root);
+	if (node == NULL) // Check if the node exists
+	{
+		printf("File %s does not exist!\n", name);
+		return -1;
+	}
+	else if (node->type != 'F') // Check that it is a file and not a directory
+	{
+		printf("Cannot remove %s (not a FILE)!\n", name);
+		return -1;
+	}
+	else
+		{
+			remove_node(node);
+			return 0;
+	}
 }
 
 int reload_command(char *filename)
