@@ -84,7 +84,7 @@ int execute_command(char **tokens, NODE **cwd, NODE *root)
 				case 6: return rm_command(tokens[1], *cwd, root);
 				case 7: return reload_command(tokens[1], cwd, root);
 				case 8: return save_command(tokens[1], root);
-				case 9: exit(0);
+				case 9: return quit_command(root);
 			}
 		}
 	}
@@ -359,3 +359,10 @@ int save_command(char *filename, NODE *root)
 	return save_to_file(filename, root);
 }
 
+int quit_command(NODE *root)
+{
+	// Save the tree under the default name, then terminate the program
+	save_to_file(QUIT_SAVE_FILE, root);
+	exit(0);
+	return 0;
+}
