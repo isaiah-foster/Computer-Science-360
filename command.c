@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// Where the quit command saves the filesystem tree
+// save file
 #define QUIT_SAVE_FILE "fssim_foster.txt"
 
-// List of all available commands
+// all available commands
 char *cmd[] = { 
     "mkdir", "rmdir",
     "ls", "cd",
@@ -67,11 +67,6 @@ char** parse_command(char *user_command)
 
 int execute_command(char **tokens, NODE **cwd, NODE *root)
 {
-	if (tokens == NULL || tokens[0] == NULL) {
-		printf("No command entered.\n");
-		return -1;
-	}
-
 	for (int i = 0; cmd[i] != 0; i++) {
 		if (strcmp(tokens[0], cmd[i]) == 0) {
 			switch(i) {
@@ -101,16 +96,15 @@ int mkdir_command(char *name, NODE *cwd, NODE *root)
 		return -1;
 	}
 
-	// Split the pathname, e.g. /a/b/c into dirname /a/b and basename c
+	// Split a pathname like /a/b/c into dir /a/b and base c
 	char dirname[MAX_PATH], basename[MAX_PATH];
 	if (split_path(name, dirname, basename) != 0)
 	{
-		// The only pathname with no basename is the root, which always exists
 		printf("DIR %s already exists!\n", name);
 		return -1;
 	}
 
-	// The parent directory has to exist and be a DIR
+	//The parent directory has to exist and be a DIR
 	NODE* parent = find_node(dirname, cwd, root);
 	if (parent == NULL)
 	{
@@ -130,14 +124,14 @@ int mkdir_command(char *name, NODE *cwd, NODE *root)
 		return -1;
 	}
 
-	NODE* new_node = create_node(basename, 'D'); // Set type to directory
+	NODE* new_node = create_node(basename, 'D');
 	if (!new_node)
 	{
 		printf("Memory allocation failed for new node.\n");
 		return -1;
 	}
 
-	// Insert new node into the tree
+	// insert new node into the tree
 	insert_node(parent, new_node);
 	return 0;
 }
@@ -151,12 +145,12 @@ int rmdir_command(char *name, NODE *cwd, NODE *root)
 	}
 
 	NODE* node = find_node(name, cwd, root);
-	if (node == NULL || node->type != 'D') // Check if the node exists and is a directory
+	if (node == NULL || node->type != 'D') //check if the node exists and is a dir
 	{
 		printf("DIR %s does not exist!\n", name);
 		return -1;
 	}
-	else if (node->parent == NULL) // The root is never removed
+	else if (node->parent == node) // The root is never removed
 	{
 		printf("Cannot remove DIR %s!\n", name);
 		return -1;
@@ -186,7 +180,7 @@ int ls_command(char *name, NODE *cwd, NODE *root)
 	}
 	else
 	{
-		if (node->type == 'D') // If it's a directory list contents
+		if (node->type == 'D') // If its a dir list contents
 		{
 			NODE* child = node->child;
 			while (child != NULL)
@@ -205,8 +199,8 @@ int ls_command(char *name, NODE *cwd, NODE *root)
 
 int cd_command(char *name, NODE **cwd, NODE *root)
 {
-	// If name is NULL, empty, or "/" change to root
-	if (name == NULL || strcmp(name, "") == 0 || strcmp(name, "/") == 0)
+	// If name is NULL change to root
+	if (name == NULL)
 	{
 		*cwd = root; 
 		return 0;
@@ -234,11 +228,10 @@ int cd_command(char *name, NODE **cwd, NODE *root)
 	}
 }
 
-// Recursively print the absolute pathname of a node, from the root down.
-// The root itself contributes nothing, so its children print as "/name".
+// Recursively print the absolute path of a node, from the root down.
 static void print_path(NODE *node)
 {
-	if (node == NULL || node->parent == NULL)
+	if (node->parent == node)
 		return;
 	print_path(node->parent);
 	printf("/%s", node->name);
@@ -246,13 +239,11 @@ static void print_path(NODE *node)
 
 int pwd_command(NODE *cwd)
 {
-	if (cwd->parent == NULL) // The CWD is the root
-		printf("/\n");
+	if (cwd->parent == cwd) // The CWD is the root
+		printf("/");
 	else
-	{
 		print_path(cwd);
-		printf("\n");
-	}
+	printf("\n");
 	return 0;
 }
 
@@ -264,11 +255,10 @@ int creat_command(char *name, NODE *cwd, NODE *root)
 		return -1;
 	}
 
-	// Split the pathname, e.g. /a/b/c into dirname /a/b and basename c
+	// Split a pathname like /a/b/c into dir /a/b and base c
 	char dirname[MAX_PATH], basename[MAX_PATH];
 	if (split_path(name, dirname, basename) != 0)
 	{
-		// The only pathname with no basename is the root, which always exists
 		printf("%s already exists!\n", name);
 		return -1;
 	}
@@ -293,14 +283,14 @@ int creat_command(char *name, NODE *cwd, NODE *root)
 		return -1;
 	}
 
-	NODE* new_node = create_node(basename, 'F'); // Set type to file
+	NODE* new_node = create_node(basename, 'F');
 	if (!new_node)
 	{
 		printf("Memory allocation failed for new node.\n");
 		return -1;
 	}
 
-	// Insert new node into the tree
+	// Insert new node
 	insert_node(parent, new_node);
 	return 0;
 }
@@ -339,8 +329,6 @@ int reload_command(char *filename, NODE **cwd, NODE *root)
 		return -1;
 	}
 
-	// A successful load frees the old tree, so move the CWD back to the root
-	// before it can be left pointing at a node that no longer exists
 	if (load_from_file(filename, root) != 0)
 		return -1;
 
@@ -364,5 +352,4 @@ int quit_command(NODE *root)
 	// Save the tree under the default name, then terminate the program
 	save_to_file(QUIT_SAVE_FILE, root);
 	exit(0);
-	return 0;
 }

@@ -107,8 +107,7 @@ NODE* find_node(char *name, NODE *cwd, NODE *root)
 		else if (strcmp(component, "..") == 0)
 		{
 			// Move up one level; the root is its own parent
-			if (current->parent != NULL)
-				current = current->parent;
+			current = current->parent;
 		}
 		else
 		{
@@ -145,10 +144,10 @@ void insert_node(NODE *parent, NODE *new_node)
 }
 
 // Unlink a node from its parent's child list and free it.
-// The root (no parent) is never removed.
+// The root (its own parent) is never removed.
 void remove_node(NODE *node)
 {
-	if (node == NULL || node->parent == NULL)
+	if (node == NULL || node->parent == node)
 		return;
 
 	NODE *parent = node->parent;

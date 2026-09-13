@@ -1,11 +1,8 @@
 #include "storage.h"
-#include "tree.h"
 #include <stdio.h>
 #include <string.h>
 
 // Write one "TYPE PATH" line for a node, then for each of its descendants.
-// Writing parents before their children lets the loader rebuild the tree
-// in a single pass.
 static void save_node(FILE *fp, NODE *node, char *path)
 {
 	fprintf(fp, "%c %s\n", node->type, path);
@@ -24,7 +21,7 @@ static void save_node(FILE *fp, NODE *node, char *path)
 	}
 }
 
-// Write the whole filesystem tree to filename, one line per node.
+// Write the whole filesystem tree to filename.
 int save_to_file(char *filename, NODE *root)
 {
 	FILE *fp = fopen(filename, "w+");
@@ -40,8 +37,6 @@ int save_to_file(char *filename, NODE *root)
 }
 
 // Rebuild the filesystem tree under root from a file written by save_to_file.
-// The existing tree is discarded, so any node the caller still holds a pointer
-// to (such as the CWD) is invalid once this returns successfully.
 int load_from_file(char *filename, NODE *root)
 {
 	FILE *fp = fopen(filename, "r");
@@ -51,7 +46,7 @@ int load_from_file(char *filename, NODE *root)
 		return -1;   // leave the current tree alone
 	}
 
-	// Only now that the file is known to be readable, drop the old tree
+	// drop the old tree and start ove
 	free_children(root);
 
 	char line[MAX_PATH + 8];
@@ -64,7 +59,7 @@ int load_from_file(char *filename, NODE *root)
 
 		char type = *path++;
 		if (type != 'D' && type != 'F')
-			continue;               // skip blank or malformed lines
+			continue; // skip blank or malformed lines
 
 		while (*path == ' ' || *path == '\t')
 			path++;
@@ -77,14 +72,14 @@ int load_from_file(char *filename, NODE *root)
 
 		char dirname[MAX_PATH], basename[MAX_PATH];
 		if (split_path(path, dirname, basename) != 0)
-			continue;               // the root line: it already exists
+			continue;// the root line: it already exists
 
 		// Both searches start at the root because saved paths are absolute
 		NODE *parent = find_node(dirname, root, root);
 		if (parent == NULL || parent->type != 'D')
-			continue;               // parent line missing, so skip this entry
+			continue; // parent line missing, so skip this entry
 		if (find_child(parent, basename) != NULL)
-			continue;               // duplicate line
+			continue;  // duplicate line
 
 		NODE *node = create_node(basename, type);
 		if (node == NULL)

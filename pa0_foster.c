@@ -12,17 +12,15 @@ int main() {
 	strcpy(root->name, "/");
 	root->parent = root;
 	root->child = NULL;
-	root->parent = NULL;
+	root->sibling = root;
 	root->type = 'D';
 
 	// Initialize current working directory
-	NODE *cwd;
-	cwd = (NODE *)malloc(sizeof(NODE));
-	cwd = root;
+	NODE *cwd = root;
 
 	/* USED AI FOR ANSI ESCAPE SEQUENCES 
 	 * Prompt: wrap this line of code in ANSI escape sequences.
-	 * I messed with the numbers to match my terminal's colors. Same applies to line 36
+	 * I messed with the numbers to match my terminal's colors. Same applies to line 34
 	 */
 	printf("\n\033[1;36mWelcome to the Unix File System!\n\n\033[0m");
 	

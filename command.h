@@ -1,5 +1,5 @@
-#ifndef COMMANDS_H
-#define COMMANDS_H
+#ifndef COMMAND_H
+#define COMMAND_H
 
 #include <string.h>
 #include "tree.h"
@@ -22,4 +22,4 @@ int reload_command(char *filename, NODE **cwd, NODE *root);
 int save_command(char *filename, NODE *root);
 int quit_command(NODE *root);
 
-#endif // COMMANDS_H
+#endif // COMMAND_H

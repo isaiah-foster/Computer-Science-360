@@ -7,7 +7,6 @@ typedef struct node {
 	char  name[64];       // node's name string
 	char  type;
 	struct node *child, *sibling, *parent;
-	// other fields if needed
 } NODE;
 
 // Function declarations for tree operations
