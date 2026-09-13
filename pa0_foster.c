@@ -18,12 +18,12 @@ int main() {
 	// Initialize current working directory
 	NODE *cwd = root;
 
-	/* USED AI FOR ANSI ESCAPE SEQUENCES 
+	/* USED AI FOR ANSI ESCAPE SEQUENCES
 	 * Prompt: wrap this line of code in ANSI escape sequences.
 	 * I messed with the numbers to match my terminal's colors. Same applies to line 34
 	 */
 	printf("\n\033[1;36mWelcome to the Unix File System!\n\n\033[0m");
-	
+
 	// Initialize user command buffers
 	char user_cmd[1024];
 	char **parsed_cmd;

@@ -7,12 +7,12 @@
 #define QUIT_SAVE_FILE "fssim_foster.txt"
 
 // all available commands
-char *cmd[] = { 
+char *cmd[] = {
     "mkdir", "rmdir",
     "ls", "cd",
     "pwd", "creat",
     "rm", "reload",
-    "save", "quit", 0 
+    "save", "quit", 0
 };
 
 char** parse_command(char *user_command)
@@ -22,7 +22,7 @@ char** parse_command(char *user_command)
 	{
 		printf("Memory allocation failed for tokens.\n");
 		return NULL;
-	} 
+	}
 
 	char *input_copy = (char*)malloc(strlen(user_command) + 1);
 	if (!input_copy)
@@ -202,7 +202,7 @@ int cd_command(char *name, NODE **cwd, NODE *root)
 	// If name is NULL change to root
 	if (name == NULL)
 	{
-		*cwd = root; 
+		*cwd = root;
 		return 0;
 	}
 
