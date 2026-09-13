@@ -1,6 +1,10 @@
 #include "command.h"
+#include "storage.h"
 #include <stdlib.h>
 #include <stdio.h>
+
+// Where the quit command saves the filesystem tree
+#define QUIT_SAVE_FILE "fssim_foster.txt"
 
 // List of all available commands
 char *cmd[] = { 
@@ -78,7 +82,7 @@ int execute_command(char **tokens, NODE **cwd, NODE *root)
 				case 4: return pwd_command(*cwd);
 				case 5: return creat_command(tokens[1], *cwd, root);
 				case 6: return rm_command(tokens[1], *cwd, root);
-				case 7: return reload_command(tokens[1]);
+				case 7: return reload_command(tokens[1], cwd, root);
 				case 8: return save_command(tokens[1]);
 				case 9: exit(0);
 			}
@@ -327,9 +331,21 @@ int rm_command(char *name, NODE *cwd, NODE *root)
 	}
 }
 
-int reload_command(char *filename)
+int reload_command(char *filename, NODE **cwd, NODE *root)
 {
-	return 0; // Placeholder for reload implementation
+	if (filename == NULL)
+	{
+		printf("Usage: reload filename\n");
+		return -1;
+	}
+
+	// A successful load frees the old tree, so move the CWD back to the root
+	// before it can be left pointing at a node that no longer exists
+	if (load_from_file(filename, root) != 0)
+		return -1;
+
+	*cwd = root;
+	return 0;
 }
 
 int save_command(char *filename)
