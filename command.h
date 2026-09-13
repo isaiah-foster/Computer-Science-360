@@ -19,5 +19,6 @@ int pwd_command(NODE *cwd);
 int creat_command(char *name, NODE *cwd, NODE *root);
 int rm_command(char *name, NODE *cwd, NODE *root);
 int reload_command(char *filename, NODE **cwd, NODE *root);
+int save_command(char *filename, NODE *root);
 
 #endif // COMMANDS_H

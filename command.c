@@ -83,7 +83,7 @@ int execute_command(char **tokens, NODE **cwd, NODE *root)
 				case 5: return creat_command(tokens[1], *cwd, root);
 				case 6: return rm_command(tokens[1], *cwd, root);
 				case 7: return reload_command(tokens[1], cwd, root);
-				case 8: return save_command(tokens[1]);
+				case 8: return save_command(tokens[1], root);
 				case 9: exit(0);
 			}
 		}
@@ -348,7 +348,14 @@ int reload_command(char *filename, NODE **cwd, NODE *root)
 	return 0;
 }
 
-int save_command(char *filename)
+int save_command(char *filename, NODE *root)
 {
-	return 0; // Placeholder for save implementation
+	if (filename == NULL)
+	{
+		printf("Usage: save filename\n");
+		return -1;
+	}
+
+	return save_to_file(filename, root);
 }
+
