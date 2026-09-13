@@ -1,12 +1,100 @@
 #include "storage.h"
 #include "tree.h"
+#include <stdio.h>
+#include <string.h>
 
-int load_from_file() {
-	// implementation for loading filesystem
+// Write one "TYPE PATH" line for a node, then for each of its descendants.
+// Writing parents before their children lets the loader rebuild the tree
+// in a single pass.
+static void save_node(FILE *fp, NODE *node, char *path)
+{
+	fprintf(fp, "%c %s\n", node->type, path);
+
+	int at_root = (strcmp(path, "/") == 0);
+	char child_path[MAX_PATH];
+
+	NODE *child = node->child;
+	while (child != NULL)
+	{
+		// The root already ends in '/', so don't add a second one
+		snprintf(child_path, sizeof(child_path), "%s%s%s",
+			path, at_root ? "" : "/", child->name);
+		save_node(fp, child, child_path);
+		child = child->sibling;
+	}
+}
+
+// Write the whole filesystem tree to filename, one line per node.
+int save_to_file(char *filename, NODE *root)
+{
+	FILE *fp = fopen(filename, "w+");
+	if (fp == NULL)
+	{
+		printf("Cannot open file %s!\n", filename);
+		return -1;
+	}
+
+	save_node(fp, root, "/");
+	fclose(fp);
 	return 0;
 }
 
-int save_to_file() {
-	// implementation for saving filesystem
+// Rebuild the filesystem tree under root from a file written by save_to_file.
+// The existing tree is discarded, so any node the caller still holds a pointer
+// to (such as the CWD) is invalid once this returns successfully.
+int load_from_file(char *filename, NODE *root)
+{
+	FILE *fp = fopen(filename, "r");
+	if (fp == NULL)
+	{
+		printf("Cannot open file %s!\n", filename);
+		return -1;   // leave the current tree alone
+	}
+
+	// Only now that the file is known to be readable, drop the old tree
+	free_children(root);
+
+	char line[MAX_PATH + 8];
+	while (fgets(line, sizeof(line), fp) != NULL)
+	{
+		// Each line reads "TYPE PATH", e.g. "D /a/b"
+		char *path = line;
+		while (*path == ' ' || *path == '\t')
+			path++;
+
+		char type = *path++;
+		if (type != 'D' && type != 'F')
+			continue;               // skip blank or malformed lines
+
+		while (*path == ' ' || *path == '\t')
+			path++;
+
+		// Drop the newline and any other trailing whitespace
+		size_t len = strlen(path);
+		while (len > 0 && (path[len - 1] == '\n' || path[len - 1] == '\r' ||
+			path[len - 1] == ' ' || path[len - 1] == '\t'))
+			path[--len] = '\0';
+
+		char dirname[MAX_PATH], basename[MAX_PATH];
+		if (split_path(path, dirname, basename) != 0)
+			continue;               // the root line: it already exists
+
+		// Both searches start at the root because saved paths are absolute
+		NODE *parent = find_node(dirname, root, root);
+		if (parent == NULL || parent->type != 'D')
+			continue;               // parent line missing, so skip this entry
+		if (find_child(parent, basename) != NULL)
+			continue;               // duplicate line
+
+		NODE *node = create_node(basename, type);
+		if (node == NULL)
+		{
+			printf("Memory allocation failed for new node.\n");
+			break;
+		}
+		insert_node(parent, node);
+	}
+
+	fclose(fp);
 	return 0;
 }
