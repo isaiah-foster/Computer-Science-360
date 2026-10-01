@@ -1,8 +1,13 @@
+#include <stdint.h>
 #include <stdlib.h>
 #include "cache.h"
 
 cache_t *cache_create(int s, int E, int b)
 {
+    // reject sizes whose line count would overflow size_t
+    if (s < 0 || s >= 64 || E < 1 || (size_t)E > (SIZE_MAX >> s))
+        return NULL;
+
     cache_t *cache = malloc(sizeof(cache_t));
     if (cache == NULL)
         return NULL;
@@ -37,8 +42,8 @@ access_result_t cache_access(cache_t *cache, unsigned long long addr)
 {
     int tag_shift = cache->s + cache->b;
     unsigned long long set_mask = ((unsigned long long)1 << cache->s) - 1;
-    unsigned long long set_index = (addr >> cache->b) & set_mask;
     // shifting a 64-bit value by 64 is undefined, so handle it explicitly
+    unsigned long long set_index = cache->b >= 64 ? 0 : (addr >> cache->b) & set_mask;
     unsigned long long tag = tag_shift >= 64 ? 0 : addr >> tag_shift;
 
     cache_line_t *set = &cache->lines[set_index * cache->E];
