@@ -1,8 +1,9 @@
 CC = gcc
 CFLAGS = -g
+CSTD = -std=c23
 
 scheduler: scheduler.c
-	$(CC) scheduler.c -o scheduler
+	$(CC) $(CSTD) $(CFLAGS) scheduler.c -o scheduler
 
 test01:
 	./scheduler sample_io/input/input-1

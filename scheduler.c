@@ -5,7 +5,9 @@
 
 // Headers as needed
 
-typedef enum {false, true} bool;        // Allows boolean types in C
+#if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 202311L
+typedef enum {false, true} bool;        // Allows boolean types in C (bool is a keyword from C23 onwards)
+#endif
 
 /* Defines a job struct */
 typedef struct Process {
@@ -14,12 +16,19 @@ typedef struct Process {
     uint32_t C;                         // C: Total CPU time required
     uint32_t M;                         // M: Multiplier of CPU burst time
     uint32_t processID;                 // The process ID given upon input read
+    uint32_t currentCPUTimeRun;          // The current CPU time run for the process
+    uint32_t currentIOBlockedTime;       // The current I/O blocked time for the process
+    uint32_t currentWaitingTime;         // The current waiting time for the process
+    uint32_t finishingTime;              // The finishing time for the process
 
     // Add other fields as needed
 } _process;
 
 uint32_t TOTAL_CREATED_PROCESSES = 0;   // The total number of processes constructed
 const uint32_t SEED_VALUE = 200;  // Seed value for reading from file
+uint32_t TOTAL_FINISHED_PROCESSES = 0;  // The total number of processes that have finished
+uint32_t CURRENT_CYCLE = 0;  // The current cycle of the simulation
+uint32_t TOTAL_NUMBER_OF_CYCLES_SPENT_BLOCKED = 0;  // The total number of cycles spent blocked
 
 // Additional variables as needed
 
@@ -171,12 +180,41 @@ void printSummaryData(_process process_list[])
  */
 int main(int argc, char *argv[])
 {
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <input-file>\n", argv[0]);
+        return 1;
+    }
+
+    // Write code for your shiny scheduler
+    FILE* input_file  = fopen(argv[1], "r");
+    if (input_file == NULL) {
+        fprintf(stderr, "Error opening input file: %s\n", argv[1]);
+        return 1;
+    }
+
     uint32_t total_num_of_process;               // Read from the file -- number of process to create
+    if (fscanf(input_file, "%u", &total_num_of_process) != 1) {
+        fprintf(stderr, "Error reading process count from %s\n", argv[1]);
+        fclose(input_file);
+        return 1;
+    }
+
     _process process_list[total_num_of_process]; // Creates a container for all processes
     // Other variables
 
+    // Each process is given as "(A B C M)"; anything after the last one is ignored
+    for (uint32_t i = 0; i < total_num_of_process; ++i) {
+        _process *p = &process_list[i];
+        if (fscanf(input_file, " ( %u %u %u %u )", &p->A, &p->B, &p->C, &p->M) != 4) {
+            fprintf(stderr, "Error reading process %u from %s\n", i, argv[1]);
+            fclose(input_file);
+            return 1;
+        }
+        p->processID = i;
+        ++TOTAL_CREATED_PROCESSES;
+    }
+    fclose(input_file);
 
-    // Write code for your shiny scheduler
 
     return 0;
 } 
